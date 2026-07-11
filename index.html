@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>프리티걸 옷입히기</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <h1>✨ 프리티걸 옷입히기</h1>
+      <div class="topbar-actions">
+        <button id="btn-random" class="btn">🎲 랜덤</button>
+        <button id="btn-reset" class="btn">↺ 초기화</button>
+        <button id="btn-save" class="btn btn-primary">💾 이미지로 저장</button>
+      </div>
+    </header>
+
+    <main class="content">
+      <section class="stage-wrap">
+        <div id="stage" class="stage"></div>
+      </section>
+
+      <section class="panel">
+        <nav id="tabs" class="tabs"></nav>
+        <div id="tab-panels" class="tab-panels"></div>
+      </section>
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
