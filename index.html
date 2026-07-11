@@ -75,7 +75,7 @@
 
 <div id="overlay">
   <div id="title">FLOW FIELD</div>
-  <div id="hint">움직여서 흐름을 만들어보세요<br>클릭하면 폭발이 일어나요</div>
+  <div id="hint">움직여서 흐름을 만들어보세요<br>클릭하면 폭죽이 터져요</div>
 </div>
 
 <div id="controls">
@@ -104,7 +104,8 @@ let flowField;
 let cols, rows;
 const cellSize = 24;
 let zOffset = 0;
-let bursts = [];
+let sparks = [];
+let flashes = [];
 
 function setup() {
   const cnv = createCanvas(windowWidth, windowHeight);
@@ -154,21 +155,65 @@ function draw() {
   for (const p of particles) {
     p.follow(flowField);
     if (mouseActive) p.attract(mouseVec);
-    for (const b of bursts) p.repelFrom(b);
     p.update();
     p.edges();
     p.show();
   }
 
-  bursts = bursts.filter(b => {
-    b.life -= 1;
-    b.radius += 14;
-    return b.life > 0;
-  });
+  drawFireworks();
 }
 
 function mousePressed() {
-  bursts.push({ x: mouseX, y: mouseY, radius: 10, life: 40 });
+  spawnFirework(mouseX, mouseY);
+}
+
+function spawnFirework(x, y) {
+  const stops = PALETTES[currentPalette];
+  flashes.push({ x, y, life: 18 });
+
+  const count = 160;
+  for (let i = 0; i < count; i++) {
+    const angle = random(TWO_PI);
+    const speed = random(4, 18);
+    const stop = random(stops);
+    sparks.push({
+      pos: createVector(x, y),
+      prevPos: createVector(x, y),
+      vel: p5.Vector.fromAngle(angle).mult(speed),
+      hue: (stop[0] + random(-14, 14) + 360) % 360,
+      life: 255
+    });
+  }
+}
+
+function drawFireworks() {
+  push();
+  blendMode(ADD);
+  noStroke();
+
+  for (let i = flashes.length - 1; i >= 0; i--) {
+    const f = flashes[i];
+    f.life -= 2;
+    if (f.life <= 0) { flashes.splice(i, 1); continue; }
+    fill(0, 0, 100, map(f.life, 0, 18, 0, 45));
+    circle(f.x, f.y, map(f.life, 0, 18, 12, 160));
+  }
+
+  for (let i = sparks.length - 1; i >= 0; i--) {
+    const s = sparks[i];
+    s.prevPos = s.pos.copy();
+    s.vel.mult(0.94);
+    s.vel.y += 0.05;
+    s.pos.add(s.vel);
+    s.life -= 6;
+    if (s.life <= 0) { sparks.splice(i, 1); continue; }
+
+    stroke(s.hue, 90, 100, map(s.life, 0, 255, 0, 95));
+    strokeWeight(2.4);
+    line(s.prevPos.x, s.prevPos.y, s.pos.x, s.pos.y);
+  }
+
+  pop();
 }
 
 class Particle {
@@ -195,17 +240,6 @@ class Particle {
     if (dist < 220 && dist > 1) {
       d.normalize();
       d.mult(map(dist, 0, 220, 0.5, 0.02));
-      this.acc.add(d);
-    }
-  }
-
-  repelFrom(burst) {
-    const bp = createVector(burst.x, burst.y);
-    const d = p5.Vector.sub(this.pos, bp);
-    const dist = d.mag();
-    if (dist < burst.radius && dist > 1) {
-      d.normalize();
-      d.mult(map(dist, 0, burst.radius, 6, 0));
       this.acc.add(d);
     }
   }
