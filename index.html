@@ -184,11 +184,11 @@ function mouseDragged() {
 
 function spawnFirework(x, y, count = 190, scale = 1) {
   const stops = PALETTES[currentPalette];
-  flashes.push({ x, y, life: 9 * scale, maxLife: 9 * scale });
+  flashes.push({ x, y, life: 8 * scale, maxLife: 8 * scale });
 
   for (let i = 0; i < count; i++) {
     const angle = random(TWO_PI);
-    const speed = random(4, 12) * scale;
+    const speed = random(10, 28) * scale;
     const stop = random(stops);
     sparks.push({
       pos: createVector(x, y),
@@ -211,8 +211,8 @@ function drawFireworks() {
     f.life -= 1.5;
     if (f.life <= 0) { flashes.splice(i, 1); continue; }
     const t = f.life / f.maxLife;
-    fill(40, 20, 100, t * 30);
-    circle(f.x, f.y, lerp(70, 8, t));
+    fill(40, 20, 100, t * 14);
+    circle(f.x, f.y, lerp(6, 60, t));
   }
 
   for (let i = sparks.length - 1; i >= 0; i--) {
