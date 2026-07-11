@@ -163,25 +163,40 @@ function draw() {
   drawFireworks();
 }
 
+let dragAnchor = null;
+
 function mousePressed() {
-  spawnFirework(mouseX, mouseY);
+  dragAnchor = createVector(mouseX, mouseY);
+  spawnFirework(mouseX, mouseY, 190, 1.2);
 }
 
-function spawnFirework(x, y) {
-  const stops = PALETTES[currentPalette];
-  flashes.push({ x, y, life: 18 });
+function mouseReleased() {
+  dragAnchor = null;
+}
 
-  const count = 160;
+function mouseDragged() {
+  if (!dragAnchor) { dragAnchor = createVector(mouseX, mouseY); return; }
+  if (dist(mouseX, mouseY, dragAnchor.x, dragAnchor.y) > 18) {
+    spawnFirework(mouseX, mouseY, 70, 0.8);
+    dragAnchor.set(mouseX, mouseY);
+  }
+}
+
+function spawnFirework(x, y, count = 190, scale = 1) {
+  const stops = PALETTES[currentPalette];
+  flashes.push({ x, y, life: 16 * scale, maxLife: 16 * scale });
+
   for (let i = 0; i < count; i++) {
     const angle = random(TWO_PI);
-    const speed = random(4, 18);
+    const speed = random(7, 26) * scale;
     const stop = random(stops);
     sparks.push({
       pos: createVector(x, y),
       prevPos: createVector(x, y),
       vel: p5.Vector.fromAngle(angle).mult(speed),
       hue: (stop[0] + random(-14, 14) + 360) % 360,
-      life: 255
+      life: 220,
+      maxLife: 220
     });
   }
 }
@@ -193,23 +208,31 @@ function drawFireworks() {
 
   for (let i = flashes.length - 1; i >= 0; i--) {
     const f = flashes[i];
-    f.life -= 2;
+    f.life -= 1.5;
     if (f.life <= 0) { flashes.splice(i, 1); continue; }
-    fill(0, 0, 100, map(f.life, 0, 18, 0, 45));
-    circle(f.x, f.y, map(f.life, 0, 18, 12, 160));
+    const t = f.life / f.maxLife;
+    fill(0, 0, 100, t * 60);
+    circle(f.x, f.y, lerp(180, 16, t));
   }
 
   for (let i = sparks.length - 1; i >= 0; i--) {
     const s = sparks[i];
     s.prevPos = s.pos.copy();
-    s.vel.mult(0.94);
-    s.vel.y += 0.05;
+    s.vel.mult(0.89);
     s.pos.add(s.vel);
-    s.life -= 6;
+    s.life -= 10;
     if (s.life <= 0) { sparks.splice(i, 1); continue; }
 
-    stroke(s.hue, 90, 100, map(s.life, 0, 255, 0, 95));
-    strokeWeight(2.4);
+    const t = s.life / s.maxLife;
+    const sat = lerp(10, 95, 1 - t);
+    const bri = lerp(100, 55, 1 - t);
+
+    stroke(s.hue, sat, bri, t * 40);
+    strokeWeight(8);
+    line(s.prevPos.x, s.prevPos.y, s.pos.x, s.pos.y);
+
+    stroke(s.hue, sat * 0.6, 100, t * 100);
+    strokeWeight(2);
     line(s.prevPos.x, s.prevPos.y, s.pos.x, s.pos.y);
   }
 
